@@ -4,7 +4,7 @@
   Máster Universitario en Ingeniería Industrial · Universidad de Salamanca
 ==============================================================================
 
-  Autor ........... [Nombre y apellidos]
+  Autor ........... Erkin Sebastian Montoya Tashpulatova
   Profesor ........ Raúl Muñoz
   Repositorio ..... https://github.com/erkinmont-sketch/cinta-transportadora
   Página web ...... https://erkinmont-sketch.github.io/cinta-transportadora/
