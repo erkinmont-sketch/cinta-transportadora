@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pruebas de verificación</title>
+  <meta name="description" content="Comprobación automática de los cálculos de la aplicación de cintas transportadoras.">
+  <link rel="stylesheet" href="../css/estilos.css">
+  <style>
+    .principal { max-width: 1180px; margin: 0 auto; padding: 20px; }
+    .cifras { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin: 14px 0; }
+    td.estado-ok { color: var(--ok); font-weight: 700; }
+    td.estado-redondeo { color: var(--acento); font-weight: 700; }
+    td.estado-errata { color: var(--aviso); font-weight: 700; }
+    td.estado-fallo { color: var(--error); font-weight: 700; }
+    td.nota-fila { text-align: left; color: var(--suave); font-size: 0.8rem; }
+    .paso table td:first-child, .paso table th:first-child { text-align: left; }
+  </style>
+</head>
+<body>
+  <header class="cabecera">
+    <div class="contenedor cabecera-interior">
+      <div>
+        <h1>Pruebas de verificación de los cálculos</h1>
+        <p class="subtitulo">Comprobación automática de js/calculos.js · se ejecuta al abrir esta página</p>
+      </div>
+      <div class="acciones-cabecera"><a class="boton boton-secundario" href="../index.html">Volver a la aplicación</a></div>
+    </div>
+  </header>
+  <main class="principal">
+    <div id="estadoGeneral" class="mensaje mensaje-aviso"><h3>Ejecutando pruebas…</h3></div>
+    <div id="cifras" class="cifras"></div>
+
+    <section class="paso">
+      <h3><span class="paso-num">1</span><span>Cómo se comprueba</span></h3>
+      <p><strong>Ejemplos de clase.</strong> Se repiten con la aplicación los ejemplos resueltos en las Indicaciones y en los Apuntes y se compara cada valor publicado. Un valor coincide si la diferencia es menor que media unidad de la última cifra publicada.</p>
+      <p><strong>Implementación independiente.</strong> El archivo <code>referencia.py</code> resuelve el mismo problema en Python, escrito por separado a partir de las fórmulas. Con él se han calculado los resultados esperados de casos límite (bordes de las tablas, todas las opciones y todos los errores) y de 1000 casos aleatorios. Aquí se comparan, uno a uno, todos los valores intermedios y finales con una tolerancia relativa de 10<sup>−9</sup>.</p>
+      <p><strong>Propiedades.</strong> Además se comprueba en cada caso que T1 − T2 = Fu, que la tensión admisible de la banda es mayor que T1, que la anchura automática es la menor válida, etc.</p>
+    </section>
+
+    <section class="paso">
+      <h3><span class="paso-num">2</span><span>Ejemplos resueltos en clase</span></h3>
+      <div id="clase"></div>
+    </section>
+
+    <section class="paso">
+      <h3><span class="paso-num">3</span><span>Comparación con la implementación independiente</span></h3>
+      <div id="cobertura"></div>
+      <div id="fallosCasos"></div>
+      <details class="tablas"><summary>Ver todos los casos</summary><div id="listaCasos"></div></details>
+    </section>
+
+    <section class="paso">
+      <h3><span class="paso-num">4</span><span>Propiedades y datos</span></h3>
+      <div id="propiedades"></div>
+    </section>
+  </main>
+
+  <script src="../js/datos-respaldo.js"></script>
+  <script src="../js/calculos.js"></script>
+  <script src="comparar.js"></script>
+  <script src="ejemplos_clase.js"></script>
+  <script src="casos.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    function $(id) { return document.getElementById(id); }
+    function num(x, dec) {
+      if (typeof x !== 'number' || !isFinite(x)) return x === null || x === undefined ? '—' : String(x);
+      return x.toFixed(dec).replace('.', ',');
+    }
+    function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function tarjeta(titulo, valor, detalle, bien) {
+      return '<div class="tarjeta-resumen' + (bien ? '' : ' mal') + '"><div class="etiqueta">' + titulo + '</div><div class="valor">' + valor +
+        '</div><div class="detalle">' + detalle + '</div></div>';
+    }
+
+    function cargar() {
+      if (location.protocol === 'file:') return Promise.resolve({ datos: window.DATOS_RESPALDO, json: null });
+      return fetch('../datos/datos.json', { cache: 'no-store' }).then(function (r) { return r.json(); })
+        .then(function (d) { return { datos: d, json: d }; })
+        .catch(function () { return { datos: window.DATOS_RESPALDO, json: null }; });
+    }
+
+    cargar().then(function (carga) {
+      var tablas = carga.datos;
+      var t0 = performance.now();
+
+      /* Ejemplos de clase */
+      var grupos = EjemplosClase.ejecutar(Cinta, tablas);
+      var rc = EjemplosClase.resumen(grupos);
+      var nombresEstado = { ok: '✓ coincide', redondeo: '✓ redondeo de clase', errata: '⚠ errata en los apuntes', fallo: '✗ FALLO' };
+      var h = '<p>Estados: <strong>coincide</strong> (igual hasta la última cifra publicada) · <strong>redondeo de clase</strong> (la resolución de clase redondeó un valor intermedio; se explica en la nota) · <strong>errata</strong> (el valor de los apuntes tiene un error de cálculo; la aplicación da el valor correcto, comprobado con un cálculo directo).</p>';
+      grupos.forEach(function (gr) {
+        h += '<h4>' + esc(gr.fuente) + ' — ' + esc(gr.titulo) + '</h4><div class="tabla-scroll"><table><thead><tr><th>Magnitud</th><th>Unidad</th><th>Valor de clase</th><th>Aplicación</th><th>Estado</th><th>Nota</th></tr></thead><tbody>';
+        gr.filas.forEach(function (f) {
+          h += '<tr><td class="izq">' + esc(f.magnitud) + '</td><td>' + esc(f.unidad) + '</td><td>' + num(f.clase, f.decimales) + '</td><td>' +
+            num(f.app, Math.min(f.decimales + 3, 8)) + '</td><td class="estado-' + f.estado + '">' + nombresEstado[f.estado] + '</td><td class="nota-fila">' + esc(f.nota || '') + '</td></tr>';
+        });
+        h += '</tbody></table></div>';
+      });
+      $('clase').innerHTML = h;
+
+      /* Casos con resultado esperado de referencia.py */
+      var correctos = 0, valores = 0, fallos = [], filas = [], resultados = [];
+      var cob = {};
+      function contar(c) { cob[c] = (cob[c] || 0) + 1; }
+      CASOS_PRUEBA.forEach(function (caso) {
+        var r = Comparar.compararCaso(caso, Cinta, tablas);
+        valores += r.valoresComparados;
+        resultados.push(r.resultado);
+        if (r.ok) correctos++; else fallos.push({ caso: caso, r: r });
+        var d = r.resultado.datos, e = caso.entradas;
+        contar(e.nRodillos + (e.nRodillos === 1 ? ' rodillo' : ' rodillos'));
+        contar('velocidad ' + e.modoVelocidad);
+        contar(e.anchura === 'auto' ? 'anchura automática' : 'anchura fija');
+        contar(e.metodoSeccion === 'catalogo' ? 'sección de catálogo (Método 2)' : 'sección por fórmulas (Método 1)');
+        contar(e.H === 0 ? 'cinta horizontal' : (e.H > 0 ? 'cinta ascendente' : 'cinta descendente'));
+        if (d.metodoResist) contar('resistencias: método ' + d.metodoResist);
+        if (d.gobierna) contar('T2 determinada por ' + { adherencia: 'la adherencia', flechaSup: 'la flecha superior', flechaInf: 'la flecha inferior' }[d.gobierna]);
+        caso.esperado.errores.forEach(function (x) { contar('error ' + x); });
+        caso.esperado.avisos.forEach(function (x) { contar('aviso ' + x); });
+        filas.push('<tr><td>' + caso.id + '</td><td class="izq">' + esc(caso.nombre) + '</td><td>' + (d.B || '—') + '</td><td>' + num(d.v, 3) + '</td><td>' +
+          num(d.Qreal, 1) + '</td><td>' + (d.Pm !== undefined ? num(d.Pm / 1000, 2) : '—') + '</td><td>' + num(d.T1, 0) + '</td><td>' + (d.z || '—') + '</td><td>' +
+          (caso.esperado.errores.join(', ') || '') + '</td><td class="' + (r.ok ? 'estado-ok' : 'estado-fallo') + '">' + (r.ok ? '✓' : '✗') + '</td></tr>');
+      });
+      var claves = Object.keys(cob).sort();
+      $('cobertura').innerHTML = '<p>Ramas del cálculo recorridas por los casos (número de casos de cada tipo):</p><div class="tabla-scroll"><table><tbody>' +
+        claves.map(function (c) { return '<tr><td class="izq">' + esc(c) + '</td><td>' + cob[c] + '</td></tr>'; }).join('') + '</tbody></table></div>';
+      $('fallosCasos').innerHTML = fallos.length
+        ? '<div class="mensaje mensaje-error"><h3>' + fallos.length + ' casos no coinciden</h3><ul>' + fallos.slice(0, 20).map(function (f) {
+            return '<li>' + f.caso.id + ': ' + f.r.diferencias.slice(0, 4).map(function (x) { return esc(x.campo + ' app=' + x.app + ' esperado=' + x.esperado); }).join('; ') + '</li>';
+          }).join('') + '</ul></div>'
+        : '<div class="mensaje mensaje-ok"><h3>Los ' + CASOS_PRUEBA.length + ' casos coinciden</h3>' + valores.toLocaleString('es-ES') + ' valores comparados con la implementación en Python.</div>';
+      $('listaCasos').innerHTML = '<div class="tabla-scroll"><table><thead><tr><th>Id</th><th>Caso</th><th>B (mm)</th><th>v (m/s)</th><th>Q (t/h)</th><th>P motor (kW)</th><th>T1 (N)</th><th>Capas</th><th>Error esperado</th><th>OK</th></tr></thead><tbody>' +
+        filas.join('') + '</tbody></table></div>';
+
+      /* Propiedades */
+      var nProp = 0, malProp = [];
+      function prop(c, t, id) { nProp++; if (!c) malProp.push(id + ': ' + t); }
+      function cerca(a, b) { return Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b)); }
+      resultados.forEach(function (r, i) {
+        var d = r.datos, e = r.entradas, id = CASOS_PRUEBA[i].id;
+        if (!r.ok) return;
+        prop(cerca(d.Qreal, 3600 * d.v * d.S * e.densidad * d.k), 'Q = 3600·v·S·γ·k', id);
+        prop(cerca(d.Fu, d.FHN + e.FS1 + e.FS2 + d.FSt), 'Fu = suma de resistencias', id);
+        if (d.Fu > 0) {
+          prop(cerca(d.T1 - d.T2, d.Fu), 'T1 − T2 = Fu', id);
+          prop(d.Tadm >= d.T1 * (1 - 1e-9), 'Tadm ≥ T1', id);
+        }
+      });
+      var respaldoOK = carga.json === null ? null : JSON.stringify(carga.json) === JSON.stringify(window.DATOS_RESPALDO);
+      $('propiedades').innerHTML = '<p>' + nProp + ' comprobaciones de propiedades: ' + (malProp.length ? '<strong class="estado-fallo">' + malProp.length + ' fallan</strong>' : 'todas se cumplen ✓') + '.</p>' +
+        '<p>Copia de respaldo de las tablas (js/datos-respaldo.js): ' + (respaldoOK === null ? 'no se puede comparar con datos/datos.json porque la página está abierta desde el disco; la comparación se hace con <code>node pruebas/ejecutar_pruebas.js</code>.' : (respaldoOK ? 'idéntica a datos/datos.json ✓' : '<strong>distinta de datos/datos.json ✗</strong>')) + '</p>';
+
+      /* Resumen */
+      var todoBien = fallos.length === 0 && rc.fallo === 0 && malProp.length === 0 && respaldoOK !== false;
+      $('estadoGeneral').className = 'mensaje ' + (todoBien ? 'mensaje-ok' : 'mensaje-error');
+      $('estadoGeneral').innerHTML = '<h3>' + (todoBien ? 'Todas las pruebas superadas' : 'Hay pruebas que fallan') + '</h3>Tiempo de ejecución: ' +
+        Math.round(performance.now() - t0) + ' ms.';
+      $('cifras').innerHTML =
+        tarjeta('Ejemplos de clase', rc.total - rc.fallo + ' / ' + rc.total, rc.ok + ' coinciden · ' + rc.redondeo + ' redondeo de clase · ' + rc.errata + ' erratas de los apuntes', rc.fallo === 0) +
+        tarjeta('Casos frente a Python', correctos + ' / ' + CASOS_PRUEBA.length, valores.toLocaleString('es-ES') + ' valores comparados', fallos.length === 0) +
+        tarjeta('Propiedades', nProp - malProp.length + ' / ' + nProp, 'T1 − T2 = Fu, Tadm ≥ T1, …', malProp.length === 0);
+    });
+  }());
+  </script>
+</body>
+</html>

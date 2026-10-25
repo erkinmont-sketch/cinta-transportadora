@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dimensionado de cintas transportadoras</title>
+  <meta name="description" content="Aplicación web para dimensionar una cinta transportadora: anchura, velocidad, capacidad, potencia, tensiones y número de capas de la banda.">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="contenedor cabecera-interior">
+      <div>
+        <h1>Dimensionado de cintas transportadoras</h1>
+        <p class="subtitulo">Transporte y Manutención Industrial · Máster Universitario en Ingeniería Industrial · Universidad de Salamanca</p>
+      </div>
+      <div class="acciones-cabecera">
+        <a class="boton boton-secundario" href="pruebas/pruebas.html">Pruebas de verificación</a>
+        <button type="button" class="boton" id="imprimir">Imprimir informe</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="contenedor disposicion">
+    <!-- ============================ DATOS DE ENTRADA ============================ -->
+    <section class="panel-datos" aria-labelledby="titulo-datos">
+      <h2 id="titulo-datos" class="titulo-panel">Datos</h2>
+
+      <div class="caja-ejemplo">
+        <label for="ejemplo">Cargar un ejemplo</label>
+        <div class="fila-ejemplo">
+          <select id="ejemplo"></select>
+          <button type="button" class="boton boton-secundario" id="cargarEjemplo">Cargar</button>
+        </div>
+        <p class="ayuda" id="descripcionEjemplo"></p>
+      </div>
+
+      <form id="formulario" novalidate autocomplete="off">
+        <fieldset>
+          <legend><span class="num">1</span> Material y capacidad</legend>
+          <div class="campo">
+            <label for="Q">Capacidad de transporte requerida <var>Q</var></label>
+            <div class="entrada"><input id="Q" type="text" inputmode="decimal"><span class="unidad">t/h</span></div>
+          </div>
+          <div class="campo">
+            <label for="densidad">Densidad aparente del material <var>γ</var></label>
+            <div class="entrada"><input id="densidad" type="text" inputmode="decimal"><span class="unidad">t/m³</span></div>
+          </div>
+          <div class="campo">
+            <label for="beta">Ángulo de sobrecarga (talud dinámico) <var>β</var></label>
+            <div class="entrada"><input id="beta" type="text" inputmode="decimal"><span class="unidad">°</span></div>
+            <p class="ayuda">Fluidez muy buena 5°, buena 10°, normal 20–25°, mala 30° (Figura 7).</p>
+          </div>
+          <div class="campo">
+            <label for="tamMax">Tamaño máximo de los trozos</label>
+            <div class="entrada"><input id="tamMax" type="text" inputmode="decimal"><span class="unidad">mm</span></div>
+            <p class="ayuda">Escriba 0 si el material no tiene trozos (polvo o grano fino).</p>
+          </div>
+          <div class="campo">
+            <label for="granulometria">Granulometría</label>
+            <select id="granulometria">
+              <option value="mixto">Mixta: 10 % de gruesos y 90 % de finos</option>
+              <option value="uniforme">Uniforme: 100 % de gruesos</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label for="materialVel">Tipo de material (para la velocidad máxima)</label>
+            <select id="materialVel"></select>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">2</span> Trazado</legend>
+          <div class="campo">
+            <label for="L">Longitud entre ejes de tambores <var>L</var></label>
+            <div class="entrada"><input id="L" type="text" inputmode="decimal"><span class="unidad">m</span></div>
+          </div>
+          <div class="campo">
+            <label for="H">Desnivel <var>H</var></label>
+            <div class="entrada"><input id="H" type="text" inputmode="decimal"><span class="unidad">m</span></div>
+            <p class="ayuda">Positivo si la cinta sube, negativo si baja, 0 si es horizontal.</p>
+          </div>
+          <div class="campo">
+            <label for="kManual">Factor de inclinación <var>k</var> <span class="opcional">opcional</span></label>
+            <div class="entrada"><input id="kManual" type="text" inputmode="decimal" placeholder="automático (tabla)"></div>
+            <p class="ayuda">Déjelo vacío para interpolar en la tabla.</p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">3</span> Rodillos y anchura de banda</legend>
+          <div class="campo">
+            <label for="nRodillos">Estación de rodillos portantes</label>
+            <select id="nRodillos">
+              <option value="1">1 rodillo (banda plana)</option>
+              <option value="2">2 rodillos (en V)</option>
+              <option value="3">3 rodillos (en artesa)</option>
+            </select>
+          </div>
+          <div class="campo" data-visible="artesa">
+            <label for="lambda">Ángulo de artesa <var>λ</var></label>
+            <div class="entrada"><input id="lambda" type="text" inputmode="decimal"><span class="unidad">°</span></div>
+          </div>
+          <div class="campo">
+            <label for="anchura">Anchura de banda <var>B</var></label>
+            <select id="anchura"></select>
+          </div>
+          <div class="campo" data-visible="tresRodillos">
+            <label for="l3Manual">Longitud del rodillo central <var>l</var><sub>3</sub> <span class="opcional">opcional</span></label>
+            <div class="entrada"><input id="l3Manual" type="text" inputmode="decimal" placeholder="automática (tabla)"><span class="unidad">mm</span></div>
+            <p class="ayuda">Solo si se fija la anchura y los rodillos no son los de la tabla.</p>
+          </div>
+          <div class="campo">
+            <label for="metodoSeccion">Cálculo de la sección</label>
+            <select id="metodoSeccion">
+              <option value="formulas">Método 1: fórmulas S = S1 + S2</option>
+              <option value="catalogo">Método 2: caudal volumétrico de catálogo</option>
+            </select>
+          </div>
+          <div class="campo" data-visible="catalogo">
+            <label for="Qv1">Caudal volumétrico de catálogo para v = 1 m/s</label>
+            <div class="entrada"><input id="Qv1" type="text" inputmode="decimal"><span class="unidad">m³/h</span></div>
+            <p class="ayuda">Valor de la tabla del fabricante para la anchura, el ángulo de artesa y el de sobrecarga elegidos. Requiere fijar la anchura.</p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">4</span> Velocidad</legend>
+          <div class="campo">
+            <label for="modoVelocidad">Criterio de velocidad</label>
+            <select id="modoVelocidad">
+              <option value="normalizada">Normalizada DIN 22101: la menor que cumpla (recomendado)</option>
+              <option value="exacta">Exacta necesaria, sin normalizar</option>
+              <option value="maxima">Máxima admisible del fabricante</option>
+              <option value="manual">Introducida a mano</option>
+            </select>
+          </div>
+          <div class="campo" data-visible="velocidadManual">
+            <label for="vManual">Velocidad de la banda <var>v</var></label>
+            <div class="entrada"><input id="vManual" type="text" inputmode="decimal"><span class="unidad">m/s</span></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">5</span> Resistencias al movimiento</legend>
+          <div class="campo">
+            <label for="f">Coeficiente de fricción <var>f</var></label>
+            <div class="entrada"><input id="f" type="text" inputmode="decimal"></div>
+            <p class="ayuda">Rodamientos: favorable 0,018 · normal 0,020 · desfavorable 0,023–0,030. Cojinetes de fricción: 0,050.</p>
+          </div>
+          <div class="campo">
+            <label for="qB">Masa de la banda por metro (cada ramal) <var>q</var><sub>B</sub></label>
+            <div class="entrada"><input id="qB" type="text" inputmode="decimal"><span class="unidad">kg/m</span></div>
+          </div>
+          <div class="campo">
+            <label for="modoRodillos">Masa de las partes giratorias de los rodillos</label>
+            <select id="modoRodillos">
+              <option value="estacion">Masa de cada estación y separación entre estaciones</option>
+              <option value="directo">Masas por metro qRO y qRU</option>
+            </select>
+          </div>
+          <div class="campo" data-visible="estacion">
+            <label for="mRO">Masa de una estación superior (portante)</label>
+            <div class="entrada"><input id="mRO" type="text" inputmode="decimal"><span class="unidad">kg</span></div>
+          </div>
+          <div class="campo" data-visible="estacion">
+            <label for="mRU">Masa de una estación inferior (retorno)</label>
+            <div class="entrada"><input id="mRU" type="text" inputmode="decimal"><span class="unidad">kg</span></div>
+          </div>
+          <div class="campo" data-visible="directo">
+            <label for="qRO">Rodillos superiores por metro <var>q</var><sub>RO</sub></label>
+            <div class="entrada"><input id="qRO" type="text" inputmode="decimal"><span class="unidad">kg/m</span></div>
+          </div>
+          <div class="campo" data-visible="directo">
+            <label for="qRU">Rodillos inferiores por metro <var>q</var><sub>RU</sub></label>
+            <div class="entrada"><input id="qRU" type="text" inputmode="decimal"><span class="unidad">kg/m</span></div>
+          </div>
+          <div class="campo">
+            <label for="lRO">Separación entre estaciones superiores <var>l</var><sub>RO</sub></label>
+            <div class="entrada"><input id="lRO" type="text" inputmode="decimal"><span class="unidad">m</span></div>
+            <p class="ayuda">Habitual: 1 a 1,5 m. También se usa para comprobar la flecha.</p>
+          </div>
+          <div class="campo">
+            <label for="lRU">Separación entre estaciones inferiores <var>l</var><sub>RU</sub></label>
+            <div class="entrada"><input id="lRU" type="text" inputmode="decimal"><span class="unidad">m</span></div>
+            <p class="ayuda">Habitual: el doble o el triple que la superior.</p>
+          </div>
+          <div class="campo">
+            <label for="metodoResist">Método de cálculo</label>
+            <select id="metodoResist">
+              <option value="auto">Automático: con C_L si L &gt; 80 m; una a una si L ≤ 80 m</option>
+              <option value="simplificado">Simplificado: longitud corregida con C_L</option>
+              <option value="global">Global: resistencias secundarias una a una</option>
+            </select>
+          </div>
+          <div class="campo" data-visible="simplificado">
+            <label for="CLManual">Coeficiente <var>C</var><sub>L</sub> <span class="opcional">opcional</span></label>
+            <div class="entrada"><input id="CLManual" type="text" inputmode="decimal" placeholder="automático (tabla)"></div>
+          </div>
+          <div class="campo" data-visible="global">
+            <label for="v0">Velocidad del material al caer, en el sentido de la cinta <var>v</var><sub>0</sub></label>
+            <div class="entrada"><input id="v0" type="text" inputmode="decimal"><span class="unidad">m/s</span></div>
+          </div>
+          <div class="campo" data-visible="global">
+            <label for="FNotras">Otras resistencias secundarias (tambores, faldones…)</label>
+            <div class="entrada"><input id="FNotras" type="text" inputmode="decimal"><span class="unidad">N</span></div>
+          </div>
+          <div class="campo">
+            <label for="FS1">Resistencias especiales principales <var>F</var><sub>S1</sub></label>
+            <div class="entrada"><input id="FS1" type="text" inputmode="decimal"><span class="unidad">N</span></div>
+          </div>
+          <div class="campo">
+            <label for="FS2">Resistencias especiales secundarias <var>F</var><sub>S2</sub></label>
+            <div class="entrada"><input id="FS2" type="text" inputmode="decimal"><span class="unidad">N</span></div>
+            <p class="ayuda">Rascadores, limpiadores, carros de descarga… 0 si no hay.</p>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">6</span> Accionamiento y tensiones</legend>
+          <div class="campo">
+            <label for="rendimiento">Rendimiento del grupo motorreductor <var>η</var></label>
+            <div class="entrada"><input id="rendimiento" type="text" inputmode="decimal"><span class="unidad">%</span></div>
+          </div>
+          <div class="campo">
+            <label for="mu">Coeficiente de rozamiento banda–tambor <var>μ</var></label>
+            <div class="entrada"><input id="mu" type="text" inputmode="decimal"></div>
+          </div>
+          <div class="campo">
+            <label for="phi">Ángulo de abrazamiento en el tambor motriz <var>φ</var></label>
+            <div class="entrada"><input id="phi" type="text" inputmode="decimal"><span class="unidad">°</span></div>
+          </div>
+          <div class="campo">
+            <label for="D">Diámetro del tambor motriz <var>D</var> <span class="opcional">opcional</span></label>
+            <div class="entrada"><input id="D" type="text" inputmode="decimal"><span class="unidad">mm</span></div>
+          </div>
+          <div class="campo">
+            <label for="flechaMax">Flecha relativa máxima entre rodillos</label>
+            <div class="entrada"><input id="flechaMax" type="text" inputmode="decimal"><span class="unidad">%</span></div>
+          </div>
+          <div class="campo">
+            <label for="T2adoptada">Tensión del ramal flojo adoptada <var>T</var><sub>2</sub> <span class="opcional">opcional</span></label>
+            <div class="entrada"><input id="T2adoptada" type="text" inputmode="decimal" placeholder="automática (la mínima)"><span class="unidad">N</span></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend><span class="num">7</span> Banda (número de capas)</legend>
+          <div class="campo">
+            <label for="R">Resistencia nominal de cada capa <var>R</var></label>
+            <div class="entrada"><input id="R" type="text" inputmode="decimal"><span class="unidad">N/mm</span></div>
+            <p class="ayuda">Por ejemplo, tejido EP 160 → 160 N/mm.</p>
+          </div>
+          <div class="campo">
+            <label for="zMinConstr">Número mínimo de capas por construcción</label>
+            <div class="entrada"><input id="zMinConstr" type="text" inputmode="numeric"><span class="unidad">capas</span></div>
+            <p class="ayuda">Con menos de 2–3 capas la banda no adopta bien la forma de artesa.</p>
+          </div>
+          <div class="campo">
+            <label for="zProp">Comprobar una banda de <var>z</var> capas <span class="opcional">opcional</span></label>
+            <div class="entrada"><input id="zProp" type="text" inputmode="numeric"><span class="unidad">capas</span></div>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- ============================== RESULTADOS =============================== -->
+    <section class="panel-resultados" aria-labelledby="titulo-resultados">
+      <h2 id="titulo-resultados" class="titulo-panel">Resultados</h2>
+      <div id="informeDatos" class="solo-impresion"></div>
+      <div id="mensajes" aria-live="polite"></div>
+      <div id="resumen" class="resumen"></div>
+      <nav id="indice" class="indice" aria-label="Pasos del cálculo"></nav>
+      <div id="pasos"></div>
+      <details id="tablas" class="tablas">
+        <summary>Tablas de clase utilizadas (se resaltan los valores usados)</summary>
+        <div id="contenidoTablas"></div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <div class="contenedor">
+      <p>Procedimiento de cálculo según los apuntes de la asignatura (Indicaciones para los ejercicios y Apuntes sobre cintas transportadoras, prof. Raúl Muñoz), normas DIN 22101 e ISO 5048.</p>
+      <p id="origenDatos"></p>
+    </div>
+  </footer>
+
+  <script src="js/datos-respaldo.js"></script>
+  <script src="js/calculos.js"></script>
+  <script src="js/interfaz.js"></script>
+</body>
+</html>
