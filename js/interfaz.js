@@ -349,6 +349,8 @@
         am.BFactor !== null ? am.BFactor + ' mm (normalizada)' : 'mayor que 2200 mm', { sep: '→' });
       h += calc('Anchura mínima', v_('B', 'mín') + ' = máx(' + (am.BTabla !== null ? am.BTabla : '—') + ', ' + (am.BFactor !== null ? am.BFactor : '—') + ')', '',
         am.Bmin !== null ? am.Bmin + ' mm' : 'no existe', { final: true });
+      h += '<p class="nota">Las Indicaciones piden la comprobación de la Tabla 1.2 cuando el material no es homogéneo y tiene trozos grandes. ' +
+        'La aplicación la hace siempre y se queda con la anchura mayor, que es lo más seguro; si en su caso no procede, puede fijar la anchura a mano.</p>';
     }
     return paso(2, 'paso-2', 'Anchura mínima por el tamaño de los trozos',
       'Indicaciones, Figura 2 y tabla de gruesos y finos · Apuntes, Tablas 1.2 y 1.3', h);
@@ -408,6 +410,11 @@
     h += calc('Trapecio sobre la artesa', SIM.S2 + ' = [' + SIM.l3 + ' + (' + SIM.b + ' − ' + SIM.l3 + ')/2·cos ' + SIM.lam + ']·[(' + SIM.b + ' − ' + SIM.l3 + ')/2·sen ' + SIM.lam + ']',
       '[' + l3 + ' + (' + b + ' − ' + l3 + ')/2·cos ' + lamTxt + ']·[(' + b + ' − ' + l3 + ')/2·sen ' + lamTxt + ']', fmt(d.S2, 6) + ' m²');
     h += calc('Sección total', SIM.S + ' = ' + SIM.S1 + ' + ' + SIM.S2, fmt(d.S1, 6) + ' + ' + fmt(d.S2, 6), fmt(d.S, 6) + ' m²', { final: true });
+    if (e.nRodillos > 1) {
+      h += '<p class="nota">' + SIM.S2 + ' es el área del trapecio sobre la artesa: base menor ' + SIM.l3 + ', base mayor ' + SIM.l3 + ' + (' + SIM.b + ' − ' + SIM.l3 +
+        ')·cos ' + SIM.lam + ' y altura (' + SIM.b + ' − ' + SIM.l3 + ')/2·sen ' + SIM.lam + '. Es la fórmula de la Figura 5 de las Indicaciones, con la que salen los ' +
+        'Ejemplos 2 y 3 resueltos en clase. En la ec. (1.1) de los apuntes v1 aparece 1/cos ' + SIM.lam + ' en lugar de cos ' + SIM.lam + ': es una errata.</p>';
+    }
     h += dibujoSeccion(geo, d.B);
     return paso(4, 'paso-4', 'Sección transversal del material (Método 1)',
       'Indicaciones, Figuras 5 y 6 · Apuntes, ec. (1.1) y Figura 1.1 (ángulos en la fórmula en radianes)', h);
@@ -490,6 +497,9 @@
       : fmt(d.FH, 2) + ' + ' + fmt(d.FN, 2) + ' + ' + fe(e.FS1) + ' + ' + fe(e.FS2) + ' + ' + par(fmt(d.FSt, 2), d.FSt);
     h += calc('Fuerza tangencial en el tambor', SIM.Fu + ' = ' + SIM.FH + ' + ' + SIM.FN + ' + ' + SIM.FS1 + ' + ' + SIM.FS2 + ' + ' + SIM.FSt, suma,
       fmt(d.Fu, 2) + ' N', { final: true });
+    h += '<p class="nota">cos ' + SIM.delta + ' multiplica solo a (2·' + SIM.qB + ' + ' + SIM.qG + '), como en la fórmula de las Indicaciones y en los Ejemplos 7 y 8 ' +
+      'de los apuntes (norma ISO 5048).' + (d.metodoResist === 'simplificado' ? ' Los valores de ' + SIM.CL + ' son los de la tabla de las Indicaciones; algunos ' +
+      'ejemplos de los apuntes usan los de la norma DIN 22101 (por ejemplo 1,45 para 200 m), que se pueden introducir a mano.' : '') + '</p>';
     return paso(7, 'paso-7', 'Resistencias al movimiento y fuerza tangencial ' + SIM.Fu,
       'Indicaciones, Resistencias al movimiento y Factor de corrección de la longitud · Apuntes, ec. (2.1) a (2.7)', h);
   }
@@ -551,7 +561,9 @@
     h += calc('Separación máxima entre rodillos (con ' + SIM.T2 + ')', v_('l', 'máx') + ' = 8·' + SIM.T2 + '·' + v_('h', 'rel') + ' / (' + v_('q') + '·' + SIM.g + '·cos ' + SIM.delta + ')', '',
       fmt(d.lSupMax, 3) + ' m (superiores) · ' + fmt(d.lInfMax, 3) + ' m (inferiores)');
     h += '<p class="nota">Se supone un único tambor motriz. La flecha se comprueba con la tensión mínima ' + SIM.T2 +
-      ' en los dos ramales, que es la hipótesis más desfavorable (Apuntes, ec. 4.12).</p>';
+      ' en los dos ramales, que es la hipótesis más desfavorable (Apuntes, ec. 4.12), y con la componente normal del peso (cos ' + SIM.delta +
+      '), como en el ejemplo de las págs. 41–42 de los apuntes. Si manda la adherencia, la banda queda justo en el límite de deslizamiento y conviene adoptar una ' +
+      SIM.T2 + ' algo mayor (Apuntes, pág. 25).</p>';
     return paso(9, 'paso-9', 'Tensiones de la banda: adherencia y flecha',
       'Indicaciones, Tensión de la cinta (Euler–Eytelwein) · Apuntes, ec. (3.4) a (3.12) y (4.9) a (4.13)', h);
   }
@@ -577,6 +589,13 @@
       h += calc('Banda propuesta de ' + d.zProp + ' capas', v_('T', 'adm') + ' = ' + SIM.R + '·' + SIM.z + '·' + SIM.B + ' / ' + SIM.Sseg,
         fe(e.R) + '·' + d.zProp + '·' + d.B + ' / ' + d.SzProp, fmt(d.TadmProp, 2) + ' N',
         { marca: marca(d.propOK, 'adecuada', 'insuficiente') });
+    }
+    var tVuelta = 2 * e.L / d.v;
+    h += calc('Tiempo de una vuelta completa de la banda', v_('t') + ' = 2·' + SIM.L + ' / ' + SIM.v, '2·' + fe(e.L) + ' / ' + fv(d.v),
+      fmt(tVuelta, 1) + ' s = ' + fmt(tVuelta / 60, 2) + ' min');
+    if (tVuelta > 300) {
+      h += '<p class="nota">La vuelta dura más de 5 minutos. Las transparencias de clase indican en ese caso «−2 capas»; los apuntes v1 no recogen esta ' +
+        'reducción y la aplicación no la aplica, lo que queda del lado de la seguridad.</p>';
     }
     h += '<p class="nota">Equivale a la fórmula de las transparencias ' + SIM.z + ' = ' + SIM.Sseg + '·' + v_('T', 'm') + ' / (100·' + SIM.B + '·' + v_('R', '1') +
       ') con ' + v_('T', 'm') + ' en kgf, ' + SIM.B + ' en m y ' + v_('R', '1') + ' en kgf/cm: aquí ' + SIM.R + ' va en N/mm, ' + SIM.B + ' en mm y ' + v_('T', 'máx') + ' en N.</p>';

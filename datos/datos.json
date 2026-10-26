@@ -62,7 +62,7 @@
         "tramos": [ { "desde": null, "hasta": null, "vmin": 1.05, "vmax": 1.68 } ] },
       { "id": "vegetal", "nombre": "Materiales no abrasivos (productos de origen vegetal, fertilizantes)",
         "tramos": [ { "desde": null, "hasta": null, "vmin": 1.31, "vmax": 2.09 } ] },
-      { "id": "extractoras", "nombre": "Bandas extractoras (de silos o tolvas) con materiales finos no abrasivos o medianamente abrasivos",
+      { "id": "extractoras", "nombre": "Bandas extractoras, planas o en artesa, con materiales finos no abrasivos o medianamente abrasivos (de silos o tolvas)",
         "tramos": [ { "desde": null, "hasta": null, "vmin": 0.3, "vmax": 0.6 } ] }
     ]
   },

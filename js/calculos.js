@@ -206,6 +206,9 @@
     var lateral = b - l3;                    // anchura útil apoyada en los rodillos laterales
     var anchoSuperior = l3 + lateral * cosL; // cuerda de la parábola del talud
     var S1 = anchoSuperior * anchoSuperior * tanBeta / 6;
+    // S2 es el área del trapecio de base menor l3, base mayor l3 + (b − l3)·cos λ y altura
+    // (b − l3)/2·sen λ: fórmula de la Figura 5 de las Indicaciones, con la que salen los
+    // Ejemplos 2 y 3 resueltos. (La ec. 1.1 de los apuntes v1 trae 1/cos λ: es una errata.)
     var S2 = (l3 + lateral / 2 * cosL) * (lateral / 2 * senL);
     return {
       Bm: Bm, b: b, l3: l3, nRodillos: nRodillos,
@@ -553,7 +556,9 @@
       if (!anchuraAuto || cand.sel.valida) { elegido = cand; break; }
     }
     if (elegido === null) {
-      return fallo('SIN_ANCHURA', 'Ninguna anchura normalizada cumple a la vez la capacidad pedida y la velocidad máxima.');
+      return fallo('SIN_ANCHURA', 'Ninguna anchura normalizada cumple a la vez la capacidad pedida y la velocidad máxima.' +
+        (e.modoVelocidad === 'normalizada' ? ' Si la velocidad máxima del material es menor que la menor velocidad normalizada (0,66 m/s), ' +
+          'use el criterio de velocidad «exacta» o «manual».' : ''));
     }
     if (elegido.sel.v === null) {
       return fallo('SIN_VELOCIDAD', elegido.sel.motivo === 'sinVmax'
@@ -648,6 +653,11 @@
     if (!tt.adherenciaOK) aviso('ADHERENCIA', 'Con la T2 adoptada la banda patinaría sobre el tambor motriz.');
     if (!tt.flechaSupOK) aviso('FLECHA_SUP', 'Con la T2 adoptada la flecha del ramal superior supera el límite.');
     if (!tt.flechaInfOK) aviso('FLECHA_INF', 'Con la T2 adoptada la flecha del ramal inferior supera el límite.');
+    // Apuntes, pág. 25: no es recomendable diseñar exactamente en el límite teórico de deslizamiento.
+    if (!tt.T2deUsuario && tt.gobierna === 'adherencia') {
+      aviso('ADHERENCIA_LIMITE', 'La T2 mínima la fija la adherencia, así que la banda trabaja justo en el límite teórico de ' +
+        'deslizamiento (reserva 0 %). Los apuntes recomiendan no diseñar exactamente en ese límite: introduzca en «T2 adoptada» un valor algo mayor.');
+    }
 
     // 8. Número de capas
     var cc = capas(tablas, d.T1, e.R, d.B, e.zMinConstr, e.zProp);

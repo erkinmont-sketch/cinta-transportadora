@@ -351,7 +351,7 @@ window.DATOS_RESPALDO = {
    },
    {
     "id": "extractoras",
-    "nombre": "Bandas extractoras (de silos o tolvas) con materiales finos no abrasivos o medianamente abrasivos",
+    "nombre": "Bandas extractoras, planas o en artesa, con materiales finos no abrasivos o medianamente abrasivos (de silos o tolvas)",
     "tramos": [
      {
       "desde": null,

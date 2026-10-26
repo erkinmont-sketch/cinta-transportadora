@@ -261,6 +261,8 @@ def calcular(e, t):
         out['avisos'].append('FLECHA_SUP')
     if not d['flechaInfOK']:
         out['avisos'].append('FLECHA_INF')
+    if e.get('T2adoptada') is None and gobierna == 'adherencia':
+        out['avisos'].append('ADHERENCIA_LIMITE')    # apuntes pag. 25: no disenar en el limite
 
     # 8. Numero de capas: menor z con R*z*B/S(z) >= Tmax
     R, Tmax = e['R'], T1

@@ -62,7 +62,8 @@
     fila('1 rodillo plano: S2', 'm²', 0, 5, s.S2);
     s = Cinta.seccion(650, 2, 30, 15, 0);
     fila('2 rodillos en V a 30°: S1', 'm²', 0.00959, 5, s.S1);
-    fila('2 rodillos en V a 30°: S2', 'm²', 0.03098, 5, s.S2);
+    fila('2 rodillos en V a 30°: S2', 'm²', 0.03098, 5, s.S2, {
+      nota: 'Con 1/cos λ, como en la ec. (1.1) de los apuntes v1, saldría 0,04131 m²: esa ecuación tiene una errata; la buena es la de la Figura 5 (cos λ).' });
     fila('2 rodillos en V a 30°: S', 'm²', 0.04057, 5, s.S);
     s = Cinta.seccion(650, 3, 45, 15, 0.25);
     fila('3 rodillos a 45° (l3 = 0,25 m): S1', 'm²', 0.00910, 5, s.S1);

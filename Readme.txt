@@ -262,7 +262,9 @@ PASO 9 · Tensiones  (Indicaciones, Euler–Eytelwein; Apuntes ec. 3.4 a 4.13)
     Comprobaciones: T1/T2 ≤ e^(μ·φ); flechas h = q·g·cos δ·l²/(8·T2) ≤ límite.
     Información adicional: fuerza máxima transmisible T2·(e^(μφ) − 1),
     ángulo mínimo de abrazamiento ln(Fu/T2 + 1)/μ y separación máxima entre
-    rodillos 8·T2·h/(q·g·cos δ).
+    rodillos 8·T2·h/(q·g·cos δ). Si manda la adherencia, la aplicación avisa
+    de que la banda queda justo en el límite de deslizamiento (Apuntes,
+    pág. 25: conviene adoptar una T2 algo mayor).
 
 PASO 10 · Número de capas  (Apuntes ec. 4.5 y 4.6, Tabla 4.1, Ejercicio 12)
     z ≥ S·Tmáx / (R·B)   con Tmáx = T1, R en N/mm y B en mm
@@ -271,7 +273,8 @@ PASO 10 · Número de capas  (Apuntes ec. 4.5 y 4.6, Tabla 4.1, Ejercicio 12)
     z = máx(z por resistencia; mínimo constructivo) y se comprueba
         T_adm = R·z·B / S ≥ T1
     Es la misma fórmula de las transparencias z = S·Tm/(100·B·R1), con Tm en
-    kgf, B en m y R1 en kgf/cm.
+    kgf, B en m y R1 en kgf/cm. Se muestra también el tiempo de una vuelta
+    completa de la banda, t = 2·L/v.
 
 
 ==============================================================================
@@ -403,6 +406,7 @@ PASO 10 · Número de capas
         z ≥ 11·20 161,26/(160·650) = 2,132 → 3 capas (dentro del intervalo ✓)
     Mínimo constructivo: 3 capas → z = 3, S = 11
     T_adm = 160·3·650/11 = 28 363,6 N ≥ T1 = 20 161,3 N ✓
+    Tiempo de una vuelta completa de la banda: 2·150/2,09 = 143,5 s (2,39 min)
 
 RESULTADO
     Banda de 650 mm en artesa de 3 rodillos a 30°, v = 2,09 m/s,
@@ -439,6 +443,12 @@ con Node.js:   node pruebas/ejecutar_pruebas.js
    Además, la tabla de C_L de clase da 5,6 para L = 4 m (la norma DIN 22101
    da 7,6). No afecta a los resultados porque la aplicación solo usa C_L para
    L > 80 m, salvo que el usuario fuerce el método simplificado.
+   Errata en una fórmula de los apuntes v1: en la ec. (1.1) la sección S2
+   lleva 1/cos λ, mientras que la Figura 5 de las Indicaciones lleva cos λ.
+   La correcta es cos λ: S2 es el área de un trapecio de base menor l3, base
+   mayor l3 + (b − l3)·cos λ y altura (b − l3)/2·sen λ, y solo con cos λ salen
+   los Ejemplos 2 y 3 resueltos en clase (con 1/cos λ el Ejemplo 2 daría
+   S2 = 0,04131 m² en lugar de 0,03098 m²). La aplicación usa cos λ.
 
 2) Implementación independiente (pruebas/referencia.py)
    El mismo cálculo se ha programado por separado en Python a partir de las
@@ -463,6 +473,18 @@ con Node.js:   node pruebas/ejecutar_pruebas.js
    el campo correcto, y que js/datos-respaldo.js es idéntico a
    datos/datos.json.
 
+4) Revisión independiente y comprobaciones externas
+   - Dos revisiones independientes, hechas con asistentes de IA que no
+     participaron en el desarrollo, han comparado las fórmulas del motor con
+     los apuntes y todos los valores de datos/datos.json con las imágenes de
+     las tablas originales. No encontraron errores de cálculo ni de
+     transcripción; los puntos en los que los apuntes no coinciden entre sí
+     se explican en el apartado 9.
+   - Las páginas superan el validador oficial del W3C (HTML y CSS, 0 errores).
+   - Se han probado en Chrome/Edge (motor Chromium) y en WebKit (motor de
+     Safari), con el archivo abierto con doble clic y con la página
+     publicada: mismos resultados y todas las pruebas superadas.
+
 
 ==============================================================================
 9. HIPÓTESIS Y LÍMITES DE LA APLICACIÓN
@@ -483,6 +505,26 @@ con Node.js:   node pruebas/ejecutar_pruebas.js
     aplicación avisa.
   - qG se calcula con la capacidad requerida, como en el Ejemplo 3 de las
     Indicaciones.
+  - Cuando los apuntes no coinciden entre sí, la aplicación sigue la
+    fórmula con la que salen los ejemplos resueltos:
+      · cos δ multiplica solo a (2·qB + qG), como en las Indicaciones y en
+        los Ejemplos 7 y 8 de los apuntes (en la ec. 2.2 aparece
+        multiplicando todo el corchete);
+      · la flecha se calcula con la componente normal del peso (cos δ), como
+        en el ejemplo de las págs. 41–42 de los apuntes;
+      · C_L sale de la tabla de las Indicaciones; algunos ejemplos de los
+        apuntes usan valores de la norma DIN 22101 (1,45 para 200 m y 1,35
+        para 250 m), que se pueden introducir a mano.
+  - La comprobación de la Tabla 1.2 (factor de gruesos y finos) se hace
+    siempre, aunque las Indicaciones la piden para materiales no homogéneos
+    con trozos grandes: es la opción más segura y, si no procede, se puede
+    fijar la anchura a mano.
+  - Si la T2 mínima la fija la adherencia, la banda queda justo en el límite
+    de deslizamiento; la aplicación lo avisa, porque los apuntes (pág. 25)
+    recomiendan adoptar una T2 algo mayor.
+  - Las transparencias indican «−2 capas» si una vuelta completa de la banda
+    dura más de 5 minutos; los apuntes v1 no lo recogen y la aplicación no lo
+    aplica (lado de la seguridad), pero muestra ese tiempo.
   - No se consideran el arranque ni el frenado.
 
 
