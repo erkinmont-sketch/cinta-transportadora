@@ -173,7 +173,7 @@ def resumen_esperado(r):
     datos = {}
     for clave, valor in r['datos'].items():
         if isinstance(valor, float):
-            valor = float('%.15g' % valor)
+            valor = float('%.12g' % valor)
         datos[clave] = valor
     cands = [[c['B'], c['valida'], c['motivo']] for c in r['candidatos']]
     return {'errores': r['errores'], 'avisos': r['avisos'], 'datos': datos, 'candidatos': cands}
