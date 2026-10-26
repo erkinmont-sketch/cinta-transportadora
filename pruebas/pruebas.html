@@ -15,6 +15,7 @@
     td.estado-fallo { color: var(--error); font-weight: 700; }
     td.nota-fila { text-align: left; color: var(--suave); font-size: 0.8rem; }
     .paso table td:first-child, .paso table th:first-child { text-align: left; }
+    .paso h3.grupo { display: block; font-size: 0.95rem; margin: 18px 0 2px; }
   </style>
 </head>
 <body>
@@ -28,30 +29,30 @@
     </div>
   </header>
   <main class="principal">
-    <div id="estadoGeneral" class="mensaje mensaje-aviso"><h3>Ejecutando pruebas…</h3></div>
+    <div id="estadoGeneral" class="mensaje mensaje-aviso"><h2>Ejecutando pruebas…</h2></div>
     <div id="cifras" class="cifras"></div>
 
     <section class="paso">
-      <h3><span class="paso-num">1</span><span>Cómo se comprueba</span></h3>
+      <h2><span class="paso-num">1</span><span>Cómo se comprueba</span></h2>
       <p><strong>Ejemplos de clase.</strong> Se repiten con la aplicación los ejemplos resueltos en las Indicaciones y en los Apuntes y se compara cada valor publicado. Un valor coincide si la diferencia es menor que media unidad de la última cifra publicada.</p>
       <p><strong>Implementación independiente.</strong> El archivo <code>referencia.py</code> resuelve el mismo problema en Python, escrito por separado a partir de las fórmulas. Con él se han calculado los resultados esperados de casos límite (bordes de las tablas, todas las opciones y todos los errores) y de 1000 casos aleatorios. Aquí se comparan, uno a uno, todos los valores intermedios y finales con una tolerancia relativa de 10<sup>−9</sup>.</p>
       <p><strong>Propiedades.</strong> Además se comprueba en cada caso que T1 − T2 = Fu, que la tensión admisible de la banda es mayor que T1, que la anchura automática es la menor válida, etc.</p>
     </section>
 
     <section class="paso">
-      <h3><span class="paso-num">2</span><span>Ejemplos resueltos en clase</span></h3>
+      <h2><span class="paso-num">2</span><span>Ejemplos resueltos en clase</span></h2>
       <div id="clase"></div>
     </section>
 
     <section class="paso">
-      <h3><span class="paso-num">3</span><span>Comparación con la implementación independiente</span></h3>
+      <h2><span class="paso-num">3</span><span>Comparación con la implementación independiente</span></h2>
       <div id="cobertura"></div>
       <div id="fallosCasos"></div>
       <details class="tablas"><summary>Ver todos los casos</summary><div id="listaCasos"></div></details>
     </section>
 
     <section class="paso">
-      <h3><span class="paso-num">4</span><span>Propiedades y datos</span></h3>
+      <h2><span class="paso-num">4</span><span>Propiedades y datos</span></h2>
       <div id="propiedades"></div>
     </section>
   </main>
@@ -92,7 +93,7 @@
       var nombresEstado = { ok: '✓ coincide', redondeo: '✓ redondeo de clase', errata: '⚠ errata en los apuntes', fallo: '✗ FALLO' };
       var h = '<p>Estados: <strong>coincide</strong> (igual hasta la última cifra publicada) · <strong>redondeo de clase</strong> (la resolución de clase redondeó un valor intermedio; se explica en la nota) · <strong>errata</strong> (el valor de los apuntes tiene un error de cálculo; la aplicación da el valor correcto, comprobado con un cálculo directo).</p>';
       grupos.forEach(function (gr) {
-        h += '<h4>' + esc(gr.fuente) + ' — ' + esc(gr.titulo) + '</h4><div class="tabla-scroll"><table><thead><tr><th>Magnitud</th><th>Unidad</th><th>Valor de clase</th><th>Aplicación</th><th>Estado</th><th>Nota</th></tr></thead><tbody>';
+        h += '<h3 class="grupo">' + esc(gr.fuente) + ' — ' + esc(gr.titulo) + '</h3><div class="tabla-scroll"><table><thead><tr><th>Magnitud</th><th>Unidad</th><th>Valor de clase</th><th>Aplicación</th><th>Estado</th><th>Nota</th></tr></thead><tbody>';
         gr.filas.forEach(function (f) {
           h += '<tr><td class="izq">' + esc(f.magnitud) + '</td><td>' + esc(f.unidad) + '</td><td>' + num(f.clase, f.decimales) + '</td><td>' +
             num(f.app, Math.min(f.decimales + 3, 8)) + '</td><td class="estado-' + f.estado + '">' + nombresEstado[f.estado] + '</td><td class="nota-fila">' + esc(f.nota || '') + '</td></tr>';
@@ -128,10 +129,10 @@
       $('cobertura').innerHTML = '<p>Ramas del cálculo recorridas por los casos (número de casos de cada tipo):</p><div class="tabla-scroll"><table><tbody>' +
         claves.map(function (c) { return '<tr><td class="izq">' + esc(c) + '</td><td>' + cob[c] + '</td></tr>'; }).join('') + '</tbody></table></div>';
       $('fallosCasos').innerHTML = fallos.length
-        ? '<div class="mensaje mensaje-error"><h3>' + fallos.length + ' casos no coinciden</h3><ul>' + fallos.slice(0, 20).map(function (f) {
+        ? '<div class="mensaje mensaje-error"><h2>' + fallos.length + ' casos no coinciden</h2><ul>' + fallos.slice(0, 20).map(function (f) {
             return '<li>' + f.caso.id + ': ' + f.r.diferencias.slice(0, 4).map(function (x) { return esc(x.campo + ' app=' + x.app + ' esperado=' + x.esperado); }).join('; ') + '</li>';
           }).join('') + '</ul></div>'
-        : '<div class="mensaje mensaje-ok"><h3>Los ' + CASOS_PRUEBA.length + ' casos coinciden</h3>' + valores.toLocaleString('es-ES') + ' valores comparados con la implementación en Python.</div>';
+        : '<div class="mensaje mensaje-ok"><h2>Los ' + CASOS_PRUEBA.length + ' casos coinciden</h2>' + valores.toLocaleString('es-ES') + ' valores comparados con la implementación en Python.</div>';
       $('listaCasos').innerHTML = '<div class="tabla-scroll"><table><thead><tr><th>Id</th><th>Caso</th><th>B (mm)</th><th>v (m/s)</th><th>Q (t/h)</th><th>P motor (kW)</th><th>T1 (N)</th><th>Capas</th><th>Error esperado</th><th>OK</th></tr></thead><tbody>' +
         filas.join('') + '</tbody></table></div>';
 
@@ -156,7 +157,7 @@
       /* Resumen */
       var todoBien = fallos.length === 0 && rc.fallo === 0 && malProp.length === 0 && respaldoOK !== false;
       $('estadoGeneral').className = 'mensaje ' + (todoBien ? 'mensaje-ok' : 'mensaje-error');
-      $('estadoGeneral').innerHTML = '<h3>' + (todoBien ? 'Todas las pruebas superadas' : 'Hay pruebas que fallan') + '</h3>Tiempo de ejecución: ' +
+      $('estadoGeneral').innerHTML = '<h2>' + (todoBien ? 'Todas las pruebas superadas' : 'Hay pruebas que fallan') + '</h2>Tiempo de ejecución: ' +
         Math.round(performance.now() - t0) + ' ms.';
       $('cifras').innerHTML =
         tarjeta('Ejemplos de clase', rc.total - rc.fallo + ' / ' + rc.total, rc.ok + ' coinciden · ' + rc.redondeo + ' redondeo de clase · ' + rc.errata + ' erratas de los apuntes', rc.fallo === 0) +

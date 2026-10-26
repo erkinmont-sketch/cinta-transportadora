@@ -137,14 +137,14 @@ select { width: 100%; font: inherit; padding: 7px 8px; border: 1px solid var(--b
 
 /* ------------------------------------------------------------ mensajes */
 .mensaje { border-radius: var(--radio); padding: 10px 14px; margin: 0 0 12px; border: 1px solid; }
-.mensaje h3 { margin: 0 0 4px; font-size: 0.95rem; }
+.mensaje h2, .mensaje h3 { margin: 0 0 4px; font-size: 0.95rem; }
 .mensaje ul { margin: 4px 0 0; padding-left: 20px; }
 .mensaje-error { background: var(--error-fondo); border-color: var(--error); color: var(--texto); }
-.mensaje-error h3 { color: var(--error); }
+.mensaje-error h2, .mensaje-error h3 { color: var(--error); }
 .mensaje-aviso { background: var(--aviso-fondo); border-color: var(--aviso); }
-.mensaje-aviso h3 { color: var(--aviso); }
+.mensaje-aviso h2, .mensaje-aviso h3 { color: var(--aviso); }
 .mensaje-ok { background: var(--ok-fondo); border-color: var(--ok); }
-.mensaje-ok h3 { color: var(--ok); }
+.mensaje-ok h2, .mensaje-ok h3 { color: var(--ok); }
 
 /* ------------------------------------------------------------- resumen */
 .resumen { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 14px; }
@@ -160,7 +160,7 @@ select { width: 100%; font: inherit; padding: 7px 8px; border: 1px solid var(--b
 
 /* --------------------------------------------------------------- pasos */
 .paso { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: var(--radio); box-shadow: var(--sombra); padding: 14px 18px; margin: 0 0 14px; scroll-margin-top: 12px; }
-.paso h3 { margin: 0 0 4px; font-size: 1.08rem; display: flex; align-items: center; gap: 10px; }
+.paso h2, .paso h3 { margin: 0 0 4px; font-size: 1.08rem; display: flex; align-items: center; gap: 10px; }
 .fuente { font-size: 0.78rem; color: var(--suave); margin: 0 0 10px; }
 .paso p { margin: 6px 0; }
 .calc { display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr); gap: 4px 16px; padding: 7px 0; border-top: 1px dashed var(--borde); align-items: baseline; }
